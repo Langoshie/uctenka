@@ -5,8 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import org.example.ReceiptItem;
-import org.example.ReceiptInput;
+import classes.ReceiptItem;
+import classes.ReceiptInput;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
