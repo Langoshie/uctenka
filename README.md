@@ -1,3 +1,8 @@
 # uctenka
-podepiste se pls
-Matej 
+Matej
+
+Samvel
+
+Pepa
+
+Gabča
