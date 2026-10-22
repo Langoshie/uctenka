@@ -1,7 +1,7 @@
 package tests; // Doporučeno mít stejný package jako testovaná třída (v src/test/java)
 
-import org.example.print;
-import org.example.print.Item;
+import classes.print;
+import classes.print.Item;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -58,8 +58,8 @@ class printTest {
         String output = getOutput();
 
         assertTrue(output.contains("Moje Prodejna"), "Účtenka musí obsahovat název obchodu");
-        assertTrue(output.contains("Thank you for your purchase!"), "Účtenka musí obsahovat poděkování");
-        assertTrue(output.contains("Date and time:"), "Účtenka musí obsahovat datum a čas");
+        assertTrue(output.contains("      Dekujeme za nakup      "), "Účtenka musí obsahovat poděkování");
+        assertTrue(output.contains("Datum a cas: "), "Účtenka musí obsahovat datum a čas");
 
 
         assertTrue(output.contains("----------------------------------------"));
