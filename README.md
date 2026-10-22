@@ -1,2 +1,8 @@
 # uctenka
-nevim
+Matej
+
+Samvel
+
+Pepa
+
+Gabča
