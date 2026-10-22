@@ -1,4 +1,4 @@
-package org.example;
+package classes;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -47,8 +47,8 @@ public class print {
         System.out.println(separator);
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-        System.out.println("Date and time: " + dtf.format(LocalDateTime.now()));
-        System.out.println("      Thank you for your purchase!      ");
+        System.out.println("Datum a cas: " + dtf.format(LocalDateTime.now()));
+        System.out.println("      Dekujeme za nakup      ");
         System.out.println(separator);
     }
 }
