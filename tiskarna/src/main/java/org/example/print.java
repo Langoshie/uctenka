@@ -51,13 +51,4 @@ public class print {
         System.out.println("      Thank you for your purchase!      ");
         System.out.println(separator);
     }
-
-    public static void main(String[] args) {
-        List<Item> cart = List.of(
-                new Item("Bread roll", 5, 20),
-                new Item("Milk 1L", 1, 23),
-                new Item("Chocolate bar", 2, 60),
-                new Item("Plastic bag", 1, 2)
-        );
-    }
 }
