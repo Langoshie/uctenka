@@ -1,0 +1,7 @@
+[HEADER]
+Supermarket MůjObchod s.r.o.
+Náměstí Míru 12, Praha 1
+DIČ: CZ12345678
+[FOOTER]
+Děkujeme za váš nákup!
+Přejeme hezký den.
