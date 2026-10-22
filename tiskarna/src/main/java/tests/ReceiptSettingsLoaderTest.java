@@ -1,115 +1,127 @@
 package tests;
 
-import org.junit.jupiter.api.AfterEach;
+import classes.ReceiptSettingsLoader;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import classes.ReceiptSettingsLoader;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ReceiptSettingsLoaderTest {
 
-    private final File settingsFile = new File("receipt_settings.txt");
-    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-    private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-    private final PrintStream originalOut = System.out;
-    private final PrintStream originalErr = System.err;
+    private ReceiptSettingsLoader loader;
 
     @BeforeEach
     void setUp() {
-        System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
-        System.setErr(new PrintStream(errContent, true, StandardCharsets.UTF_8));
-
-        if (settingsFile.exists()) {
-            settingsFile.delete();
-        }
-    }
-
-    @AfterEach
-    void tearDown() {
-        System.setOut(originalOut);
-        System.setErr(originalErr);
-
-        if (settingsFile.exists()) {
-            settingsFile.delete();
-        }
+        loader = new ReceiptSettingsLoader();
     }
 
     @Test
-    @DisplayName("Konstruktor lze vytvořit (pokrytí pro code coverage)")
-    void testConstructor() {
-        ReceiptSettingsLoader loader = new ReceiptSettingsLoader();
-        assertNotNull(loader);
+    @DisplayName("Nová instance má prázdné seznamy pro hlavičku i patičku")
+    void testInitialStateIsEmpty() {
+        assertNotNull(loader.headerLines);
+        assertNotNull(loader.footerLines);
+        assertTrue(loader.headerLines.isEmpty());
+        assertTrue(loader.footerLines.isEmpty());
     }
 
     @Test
-    @DisplayName("main úspěšně načte a vytiskne hlavičku i patičku")
-    void testMainSuccess() throws IOException {
-        String fileContent = """
+    @DisplayName("Úspěšné načtení hlavičky a patičky z platného souboru")
+    void testLoadSettingsSuccess(@TempDir Path tempDir) throws IOException {
+        Path filePath = tempDir.resolve("settings.txt");
+        String content = """
                 [HEADER]
                 Supermarket VŠE
                 Náměstí W. Churchilla 4
                 IČO: 12345678
                 [FOOTER]
                 Děkujeme za nákup!
+                Na shledanou.
                 """;
-        Files.writeString(settingsFile.toPath(), fileContent);
+        Files.writeString(filePath, content);
 
-        ReceiptSettingsLoader.main(new String[0]);
+        loader.loadSettings(filePath.toString());
 
-        String output = outContent.toString(StandardCharsets.UTF_8);
+        // Kontrola hlavičky
+        assertEquals(3, loader.headerLines.size());
+        assertEquals(List.of(
+                "Supermarket VŠE",
+                "Náměstí W. Churchilla 4",
+                "IČO: 12345678"
+        ), loader.headerLines);
 
-        assertTrue(output.contains("Opakujici se data byla uspesne nactena ze souboru."));
-        assertTrue(output.contains("--- NACTENA HLAVICKA ---"));
-        assertTrue(output.contains("Supermarket VŠE"));
-        assertTrue(output.contains("Náměstí W. Churchilla 4"));
-        assertTrue(output.contains("IČO: 12345678"));
-        assertTrue(output.contains("--- NACTENA PATKA ---"));
-        assertTrue(output.contains("Děkujeme za nákup!"));
+        // Kontrola patičky
+        assertEquals(2, loader.footerLines.size());
+        assertEquals(List.of(
+                "Děkujeme za nákup!",
+                "Na shledanou."
+        ), loader.footerLines);
     }
 
     @Test
-    @DisplayName("main vypíše chybu do System.err, pokud soubor neexistuje")
-    void testMainFileNotFound() {
+    @DisplayName("Neexistující soubor nevyhodí výjimku a seznamy zůstanou prázdné")
+    void testNonExistentFileHandledGracefully() {
+        String nonExistentPath = "soubor_ktery_urcite_neexistuje_123456.txt";
 
-        ReceiptSettingsLoader.main(new String[0]);
+        // Metoda nesmí spadnout na výjimku
+        assertDoesNotThrow(() -> loader.loadSettings(nonExistentPath));
 
-        String errorOutput = errContent.toString(StandardCharsets.UTF_8);
-        String standardOutput = outContent.toString(StandardCharsets.UTF_8);
-
-        assertTrue(errorOutput.contains("Chyba pri cteni souboru:"));
-        assertFalse(standardOutput.contains("--- NACTENA HLAVICKA ---"));
+        // Seznamy musí zůstat netknuté
+        assertTrue(loader.headerLines.isEmpty());
+        assertTrue(loader.footerLines.isEmpty());
     }
 
     @Test
-    @DisplayName("main správně ignoruje řádky mimo sekce a prázdné řádky")
-    void testMainIgnoresUnknownSectionsAndEmptyLines() throws IOException {
-        String fileContent = """
-                Komentář před sekcí
+    @DisplayName("Ignorování prázdných řádků a ořezávání přebytečných mezer okolo textu")
+    void testIgnoreEmptyLinesAndTrimWhitespace(@TempDir Path tempDir) throws IOException {
+        Path filePath = tempDir.resolve("spaced_settings.txt");
+        String content = """
                 
                 [HEADER]
-                Platný název obchodu
+                   Obchod u Nádraží   
                 
-                [UNKNOWN_SECTION]
-                Ignorovaný text
+                   Tel: 123 456 789   
+                
+                [FOOTER]
+                   Přejeme hezký den!   
                 """;
-        Files.writeString(settingsFile.toPath(), fileContent);
+        Files.writeString(filePath, content);
 
-        ReceiptSettingsLoader.main(new String[0]);
+        loader.loadSettings(filePath.toString());
 
-        String output = outContent.toString(StandardCharsets.UTF_8);
+        assertEquals(List.of("Obchod u Nádraží", "Tel: 123 456 789"), loader.headerLines);
+        assertEquals(List.of("Přejeme hezký den!"), loader.footerLines);
+    }
 
-        assertTrue(output.contains("Platný název obchodu"));
-        assertFalse(output.contains("Komentář před sekcí"));
-        assertFalse(output.contains("Ignorovaný text"));
+    @Test
+    @DisplayName("Text před první sekcí a neznámé sekce se neuloží do hlavičky ani patičky")
+    void testIgnoreUnknownSectionsAndPrefixedText(@TempDir Path tempDir) throws IOException {
+        Path filePath = tempDir.resolve("extra_sections.txt");
+        String content = """
+                # Toto je komentář před sekcí
+                Nějaký náhodný text
+                [HEADER]
+                Platná hlavička
+                [CUSTOM_INFO]
+                Tento řádek patří do neznámé sekce
+                [FOOTER]
+                Platná patička
+                """;
+        Files.writeString(filePath, content);
+
+        loader.loadSettings(filePath.toString());
+
+        assertEquals(1, loader.headerLines.size());
+        assertEquals("Platná hlavička", loader.headerLines.get(0));
+
+        assertEquals(1, loader.footerLines.size());
+        assertEquals("Platná patička", loader.footerLines.get(0));
     }
 }
