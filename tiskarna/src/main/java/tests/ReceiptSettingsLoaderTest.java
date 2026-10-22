@@ -26,11 +26,9 @@ class ReceiptSettingsLoaderTest {
 
     @BeforeEach
     void setUp() {
-        // Přesměrování standardního i chybového výstupu
         System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
         System.setErr(new PrintStream(errContent, true, StandardCharsets.UTF_8));
 
-        // Zajištění čistého stavu před každým testem
         if (settingsFile.exists()) {
             settingsFile.delete();
         }
@@ -38,11 +36,9 @@ class ReceiptSettingsLoaderTest {
 
     @AfterEach
     void tearDown() {
-        // Obnovení výchozích proudů
         System.setOut(originalOut);
         System.setErr(originalErr);
 
-        // Úklid souboru po testu
         if (settingsFile.exists()) {
             settingsFile.delete();
         }
@@ -84,16 +80,13 @@ class ReceiptSettingsLoaderTest {
     @Test
     @DisplayName("main vypíše chybu do System.err, pokud soubor neexistuje")
     void testMainFileNotFound() {
-        // Soubor receipt_settings.txt neexistuje
 
         ReceiptSettingsLoader.main(new String[0]);
 
         String errorOutput = errContent.toString(StandardCharsets.UTF_8);
         String standardOutput = outContent.toString(StandardCharsets.UTF_8);
 
-        // Ověření, že chyba šla do chybového výstupu
         assertTrue(errorOutput.contains("Chyba pri cteni souboru:"));
-        // Ověření, že se program předčasně ukončil přes return a netiskl hlavičky
         assertFalse(standardOutput.contains("--- NACTENA HLAVICKA ---"));
     }
 

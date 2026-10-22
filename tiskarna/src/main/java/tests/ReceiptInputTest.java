@@ -24,13 +24,11 @@ class ReceiptInputTest {
 
     @BeforeEach
     void setUp() {
-        // Potlačení výpisů do konzole během testů, aby nezahlcovaly výstup
         System.setOut(new PrintStream(OutputStream.nullOutputStream()));
     }
 
     @AfterEach
     void tearDown() {
-        // Obnovení systémových proudů do původního stavu
         System.setIn(originalIn);
         System.setOut(originalOut);
     }
@@ -39,9 +37,6 @@ class ReceiptInputTest {
         System.setIn(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
     }
 
-    // =========================================================================
-    // Základní průchody a ukončení
-    // =========================================================================
 
     @Test
     @DisplayName("Okamžité zadání 'konec' vrátí prázdný seznam")
@@ -118,10 +113,6 @@ class ReceiptInputTest {
         assertEquals(2, items.get(1).getQuantity());
     }
 
-    // =========================================================================
-    // Ošetření nevalidních vstupů
-    // =========================================================================
-
     @Test
     @DisplayName("Prázdný název položky (Enter / mezery) se přeskočí a cyklus pokračuje")
     void testEmptyNameSkipped() {
@@ -147,8 +138,8 @@ class ReceiptInputTest {
     void testInvalidPriceHandledGracefully() {
         String simulatedInput = String.join("\n",
                 "Káva",
-                "dvacet",      // Chybná cena (vyvolá NumberFormatException)
-                "Káva",        // Nový pokus
+                "dvacet",
+                "Káva",
                 "150.0",
                 "1",
                 "konec"
@@ -169,8 +160,8 @@ class ReceiptInputTest {
         String simulatedInput = String.join("\n",
                 "Čokoláda",
                 "35.0",
-                "dvě",         // Chybné množství
-                "Čokoláda",    // Nový pokus
+                "dvě",
+                "Čokoláda",
                 "35.0",
                 "2",
                 "konec"
